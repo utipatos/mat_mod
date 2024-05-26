@@ -3,8 +3,8 @@ from random import randint
 from typing import Literal
 
 from keras import layers, Sequential, Input, backend
-from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from keras.src.optimizers import RMSprop
+from keras.src.preprocessing.image import ImageDataGenerator
 from keras.src.utils import load_img, img_to_array, array_to_img
 from matplotlib import pyplot as plt
 

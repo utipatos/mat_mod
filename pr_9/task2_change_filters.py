@@ -5,11 +5,11 @@ from typing import Literal
 
 import certifi
 import numpy as np
-from keras import layers, Sequential, models
+from keras import layers, Sequential, Input, Model
+from keras.src.layers import Conv2D, MaxPooling2D
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
 from keras.src.optimizers import RMSprop
 from matplotlib import pyplot as plt
-from keras.src.applications.vgg16 import VGG16
 
 from definitions import CAT_AND_DOGS_SMALL_DIR
 
@@ -22,7 +22,6 @@ cats_and_dogs_dir = CAT_AND_DOGS_SMALL_DIR
 train_dir = os.path.join(cats_and_dogs_dir, 'train')
 validation_dir = os.path.join(cats_and_dogs_dir, 'validation')
 test_dir = os.path.join(cats_and_dogs_dir, 'test')
-
 
 def get_train_test_validation_paths(animal_type: Literal['cats', 'dogs']) -> tuple:
     train_sub_dir = os.path.join(train_dir, animal_type)
@@ -119,10 +118,37 @@ if __name__ == '__main__':
     conv_base_output_shape = 4 * 4 * 512
     train_samples_count, validation_sample_count, test_sample_count = 2000, 1000, 1000
     # Виділення згорткової основи
-    conv_base = VGG16(weights='imagenet',
-                      include_top=False,
-                      input_shape=(150, 150, 3))
-    conv_base.summary()
+    # Визначення нової архітектури моделі з подвоєними фільтрами
+    input_tensor = Input(shape=(150, 150, 3))
+    x = Conv2D(64, (3, 3), activation='relu', padding='same')(input_tensor)
+    x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+    x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+    x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+    x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+    x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+    conv_base = Model(inputs=input_tensor, outputs=x)
+
+    model = Sequential([
+        conv_base,
+        layers.Flatten(),
+        layers.Dense(256, activation='relu'),
+        layers.Dropout(0.5),
+        layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.summary()
 
     train_cats_dir, test_cats_dir, validation_cats_dir = get_train_test_validation_paths('cats')
     train_dogs_dir, test_dogs_dir, validation_dogs_dir = get_train_test_validation_paths('dogs')

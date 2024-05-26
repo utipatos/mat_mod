@@ -160,7 +160,7 @@ if __name__ == '__main__':
     train_generator, validation_generator = create_generators(train_dir, validation_dir, batch_size)
 
     model.compile(loss='binary_crossentropy',
-                  optimizer=RMSprop(learning_rate=2e-5),
+                  optimizer='adam',
                   metrics=['accuracy'])
     history = model.fit(train_generator,
                         epochs=30,

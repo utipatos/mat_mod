@@ -145,6 +145,7 @@ if __name__ == '__main__':
             conv_base,
             layers.Flatten(),
             layers.Dense(units=256, activation='relu'),
+            layers.Dense(units=256, activation='relu'),
             layers.Dense(units=1, activation='sigmoid')
         ]
     )
